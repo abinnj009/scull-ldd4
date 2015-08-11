@@ -64,6 +64,7 @@ int scull_trim(struct scull_dev *dev)
 	int qset = dev->qset;   /* "dev" is not-null */
 	int i;
 
+	printk(KERN_INFO "main.c Abin, scull_trim is called");
 	for (dptr = dev->data; dptr; dptr = next) { /* all the list items */
 		if (dptr->data) {
 			for (i = 0; i < qset; i++)
@@ -89,7 +90,7 @@ int scull_read_procmem(struct seq_file *s, void *v)
 {
         int i, j;
         int limit = s->size - 80; /* Don't print more than this */
-
+	printk(KERN_INFO "main.c Abin, scull_read_procmem is called");
         for (i = 0; i < scull_nr_devs && s->count <= limit; i++) {
                 struct scull_dev *d = &scull_devices[i];
                 struct scull_qset *qs = d->data;
@@ -120,6 +121,7 @@ int scull_read_procmem(struct seq_file *s, void *v)
  */
 static void *scull_seq_start(struct seq_file *s, loff_t *pos)
 {
+        printk(KERN_INFO "main.c Abin, scull_seq_start is called");
 	if (*pos >= scull_nr_devs)
 		return NULL;   /* No more to read */
 	return scull_devices + *pos;
@@ -127,6 +129,7 @@ static void *scull_seq_start(struct seq_file *s, loff_t *pos)
 
 static void *scull_seq_next(struct seq_file *s, void *v, loff_t *pos)
 {
+        printk(KERN_INFO "main.c Abin, scull_seq_next is called");
 	(*pos)++;
 	if (*pos >= scull_nr_devs)
 		return NULL;
@@ -135,11 +138,13 @@ static void *scull_seq_next(struct seq_file *s, void *v, loff_t *pos)
 
 static void scull_seq_stop(struct seq_file *s, void *v)
 {
+        printk(KERN_INFO "main.c Abin, scull_seq_stop is called");
 	/* Actually, there's nothing to do here */
 }
 
 static int scull_seq_show(struct seq_file *s, void *v)
 {
+        printk(KERN_INFO "main.c Abin, scull_seq_show is called");
 	struct scull_dev *dev = (struct scull_dev *) v;
 	struct scull_qset *d;
 	int i;
@@ -178,11 +183,13 @@ static struct seq_operations scull_seq_ops = {
  */
 static int scullmem_proc_open(struct inode *inode, struct file *file)
 {
+        printk(KERN_INFO "main.c Abin, scullmem_proc_open is called");
 	return single_open(file, scull_read_procmem, NULL);
 }
 
 static int scullseq_proc_open(struct inode *inode, struct file *file)
 {
+        printk(KERN_INFO "main.c Abin, scullseq_proc_open is called");
 	return seq_open(file, &scull_seq_ops);
 }
 
@@ -212,6 +219,7 @@ static struct file_operations scullseq_proc_ops = {
 
 static void scull_create_proc(void)
 {
+        printk(KERN_INFO "main.c Abin, scull_create_proc is called");
 	proc_create_data("scullmem", 0 /* default mode */,
 			NULL /* parent dir */, &scullmem_proc_ops,
 			NULL /* client data */);
@@ -220,6 +228,7 @@ static void scull_create_proc(void)
 
 static void scull_remove_proc(void)
 {
+        printk(KERN_INFO "main.c Abin, scull_remove_proc is called");
 	/* no problem if it was not registered */
 	remove_proc_entry("scullmem", NULL /* parent dir */);
 	remove_proc_entry("scullseq", NULL);
@@ -238,6 +247,7 @@ static void scull_remove_proc(void)
 
 int scull_open(struct inode *inode, struct file *filp)
 {
+        printk(KERN_INFO "main.c Abin, scull_open is called");
 	struct scull_dev *dev; /* device information */
 
 	dev = container_of(inode->i_cdev, struct scull_dev, cdev);
@@ -255,6 +265,7 @@ int scull_open(struct inode *inode, struct file *filp)
 
 int scull_release(struct inode *inode, struct file *filp)
 {
+        printk(KERN_INFO "main.c Abin, scull_release is called");
 	return 0;
 }
 /*
@@ -262,6 +273,7 @@ int scull_release(struct inode *inode, struct file *filp)
  */
 struct scull_qset *scull_follow(struct scull_dev *dev, int n)
 {
+        printk(KERN_INFO "main.c Abin, scull_follow is called");
 	struct scull_qset *qs = dev->data;
 
         /* Allocate first qset explicitly if need be */
@@ -300,6 +312,8 @@ ssize_t scull_read(struct file *filp, char __user *buf, size_t count,
 	int item, s_pos, q_pos, rest;
 	ssize_t retval = 0;
 
+
+        printk(KERN_INFO "main.c Abin, scull_read is called");
 	if (down_interruptible(&dev->sem))
 		return -ERESTARTSYS;
 	if (*f_pos >= dev->size)
@@ -344,6 +358,7 @@ ssize_t scull_write(struct file *filp, const char __user *buf, size_t count,
 	int item, s_pos, q_pos, rest;
 	ssize_t retval = -ENOMEM; /* value used in "goto out" statements */
 
+        printk(KERN_INFO "main.c Abin, scull_write is called");
 	if (down_interruptible(&dev->sem))
 		return -ERESTARTSYS;
 
@@ -397,6 +412,7 @@ long scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	int err = 0, tmp;
 	int retval = 0;
     
+        printk(KERN_INFO "main.c Abin, scull_ioctl is called");
 	/*
 	 * extract the type and number bitfields, and don't decode
 	 * wrong cmds: return ENOTTY (inappropriate ioctl) before access_ok()
@@ -525,6 +541,7 @@ loff_t scull_llseek(struct file *filp, loff_t off, int whence)
 	struct scull_dev *dev = filp->private_data;
 	loff_t newpos;
 
+        printk(KERN_INFO "main.c Abin, scull_llseek is called");
 	switch(whence) {
 	  case 0: /* SEEK_SET */
 		newpos = off;
@@ -572,6 +589,7 @@ void scull_cleanup_module(void)
 	int i;
 	dev_t devno = MKDEV(scull_major, scull_minor);
 
+        printk(KERN_INFO "main.c Abin, scull_cleanup_module is called");
 	/* Get rid of our char dev entries */
 	if (scull_devices) {
 		for (i = 0; i < scull_nr_devs; i++) {
@@ -602,6 +620,7 @@ static void scull_setup_cdev(struct scull_dev *dev, int index)
 {
 	int err, devno = MKDEV(scull_major, scull_minor + index);
     
+        printk(KERN_INFO "main.c Abin, scull_setup_cdev is called");
 	cdev_init(&dev->cdev, &scull_fops);
 	dev->cdev.owner = THIS_MODULE;
 	dev->cdev.ops = &scull_fops;
@@ -621,6 +640,7 @@ int scull_init_module(void)
  * Get a range of minor numbers to work with, asking for a dynamic
  * major unless directed otherwise at load time.
  */
+        printk(KERN_INFO "main.c Abin, scull_init_module is called");
 	if (scull_major) {
 		dev = MKDEV(scull_major, scull_minor);
 		result = register_chrdev_region(dev, scull_nr_devs, "scull");

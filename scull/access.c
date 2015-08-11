@@ -53,14 +53,40 @@ static atomic_t scull_s_available = ATOMIC_INIT(1);
 
 static int scull_s_open(struct inode *inode, struct file *filp)
 {
+	printk(KERN_INFO "access.c Abin, scull_s_open is called");
 	struct scull_dev *dev = &scull_s_device; /* device information */
 
-	if (! atomic_dec_and_test (&scull_s_available)) {
-		atomic_inc(&scull_s_available);
+	if (! atomic_dec_and_test (&scull_s_available)) { /* decrement atomic_t 
+		variable by 1 and test, returns true if the decremented result atomic_t variable is 0 */
+		atomic_inc(&scull_s_available); /* increments the atomic_t variable */
 		return -EBUSY; /* already open */
 	}
 
 	/* then, everything else is copied from the bare scull device */
+
+	/*
+	   The file access modes allow a file descriptor to be used for reading, writing, or both.
+	   (On GNU/Hurd systems, they can also allow none of these, and allow execution of the file 
+	   as a program.) The access modes are chosen when the file is opened, and never change.
+
+		Macro: int O_RDONLY
+
+			Open the file for read access. 
+
+		Macro: int O_WRONLY
+
+			Open the file for write access. 
+
+		Macro: int O_RDWR
+
+			Open the file for both reading and writing. 
+	   Macro: int O_ACCMODE
+
+	                This macro stands for a mask that can be bitwise-ANDed with the file status flag 
+			value to produce a value representing the file access mode. The mode will be 
+			O_RDONLY, O_WRONLY, or O_RDWR. (On GNU/Hurd systems it could also be zero, and 
+			it never includes the O_EXEC bit.) 
+	 */
 	if ( (filp->f_flags & O_ACCMODE) == O_WRONLY)
 		scull_trim(dev);
 	filp->private_data = dev;
@@ -69,6 +95,7 @@ static int scull_s_open(struct inode *inode, struct file *filp)
 
 static int scull_s_release(struct inode *inode, struct file *filp)
 {
+	printk(KERN_INFO "access.c Abin, scull_s_release is called");
 	atomic_inc(&scull_s_available); /* release the device */
 	return 0;
 }
@@ -101,6 +128,7 @@ static DEFINE_SPINLOCK(scull_u_lock);
 
 static int scull_u_open(struct inode *inode, struct file *filp)
 {
+	printk(KERN_INFO "access.c Abin, scull_u_open is called");
 	struct scull_dev *dev = &scull_u_device; /* device information */
 
 	spin_lock(&scull_u_lock);
@@ -128,6 +156,7 @@ static int scull_u_open(struct inode *inode, struct file *filp)
 
 static int scull_u_release(struct inode *inode, struct file *filp)
 {
+        printk(KERN_INFO "access.c Abin, scull_u_release is called");
 	spin_lock(&scull_u_lock);
 	scull_u_count--; /* nothing else */
 	spin_unlock(&scull_u_lock);
@@ -163,6 +192,7 @@ static DEFINE_SPINLOCK(scull_w_lock);
 
 static inline int scull_w_available(void)
 {
+	printk(KERN_INFO "access.c Abin, scull_w_available is called");
 	return scull_w_count == 0 ||
 		scull_w_owner == current_uid().val ||
 		scull_w_owner == current_euid().val ||
@@ -172,6 +202,7 @@ static inline int scull_w_available(void)
 
 static int scull_w_open(struct inode *inode, struct file *filp)
 {
+        printk(KERN_INFO "access.c Abin, scull_w_open is called");
 	struct scull_dev *dev = &scull_w_device; /* device information */
 
 	spin_lock(&scull_w_lock);
@@ -196,6 +227,8 @@ static int scull_w_open(struct inode *inode, struct file *filp)
 
 static int scull_w_release(struct inode *inode, struct file *filp)
 {
+        printk(KERN_INFO "access.c Abin, scull_w_release is called");
+
 	int temp;
 
 	spin_lock(&scull_w_lock);
@@ -247,6 +280,7 @@ static struct scull_dev scull_c_device;
 /* Look for a device or create one if missing */
 static struct scull_dev *scull_c_lookfor_device(dev_t key)
 {
+	printk(KERN_INFO "access.c Abin, scull_c_lookfor_device is called");
 	struct scull_listitem *lptr;
 
 	list_for_each_entry(lptr, &scull_c_list, list) {
@@ -273,6 +307,8 @@ static struct scull_dev *scull_c_lookfor_device(dev_t key)
 
 static int scull_c_open(struct inode *inode, struct file *filp)
 {
+        printk(KERN_INFO "access.c Abin, scull_c_open is called");
+
 	struct scull_dev *dev;
 	dev_t key;
  
@@ -299,6 +335,8 @@ static int scull_c_open(struct inode *inode, struct file *filp)
 
 static int scull_c_release(struct inode *inode, struct file *filp)
 {
+        printk(KERN_INFO "access.c Abin, scull_c_release is called");
+
 	/*
 	 * Nothing to do, because the device is persistent.
 	 * A `real' cloned device should be freed on last close
@@ -343,6 +381,7 @@ static struct scull_adev_info {
  */
 static void scull_access_setup (dev_t devno, struct scull_adev_info *devinfo)
 {
+        printk(KERN_INFO "access.c Abin, scull_access_setup is called");
 	struct scull_dev *dev = devinfo->sculldev;
 	int err;
 
@@ -368,7 +407,8 @@ static void scull_access_setup (dev_t devno, struct scull_adev_info *devinfo)
 int scull_access_init(dev_t firstdev)
 {
 	int result, i;
-
+	
+	 printk(KERN_INFO "access.c Abin, scull_access_init is called");
 	/* Get our number space */
 	result = register_chrdev_region (firstdev, SCULL_N_ADEVS, "sculla");
 	if (result < 0) {
@@ -389,6 +429,8 @@ int scull_access_init(dev_t firstdev)
  */
 void scull_access_cleanup(void)
 {
+        printk(KERN_INFO "access.c Abin, scull_access_cleanup is called");
+
 	struct scull_listitem *lptr, *next;
 	int i;
 
