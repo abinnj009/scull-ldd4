@@ -35,7 +35,7 @@ ssize_t faulty_read(struct file *filp, char __user *buf,
 	char stack_buf[4];
 
 	/* Let's try a buffer overflow  */
-	memset(stack_buf, 0xff, 20);
+	memset(stack_buf, 1 , 20);
 	if (count > 4)
 		count = 4; /* copy 4 bytes to the user */
 	ret = copy_to_user(buf, stack_buf, count);
