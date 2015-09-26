@@ -717,9 +717,9 @@ int snull_init_module(void)
 
 	/* Allocate the devices */
 	snull_devs[0] = alloc_netdev(sizeof(struct snull_priv), "sn%d",
-			snull_init);
+			NET_NAME_UNKNOWN,snull_init);
 	snull_devs[1] = alloc_netdev(sizeof(struct snull_priv), "sn%d",
-			snull_init);
+			NET_NAME_UNKNOWN,snull_init);
 	if (snull_devs[0] == NULL || snull_devs[1] == NULL)
 		goto out;
 
